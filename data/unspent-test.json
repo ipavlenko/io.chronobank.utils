@@ -1,0 +1,26 @@
+[
+  {
+    "address": "mnNPCCsesaxDsfr1oUJA7QMk7z42GANcDs",
+    "prevout_hash": "f972343b2490c7abf6fc675510f061180c3ed079457179458d2d6797c1ffe41d",
+    "prevout_n": 0,
+    "value": 1.3
+  },
+  {
+    "address": "mq1Kd8p93Fd2GeRXnSJ93Ptc2kigqwM4BL",
+    "prevout_hash": "c8a17b7a7934f4f62445625ad5962c6dd858e5dbf6446e839a7fed095efb5409",
+    "prevout_n": 0,
+    "value": 0.65
+  },
+  {
+    "address": "n4ZGiytaz1kAXa9LLyLuHUkqE1SmuwJm4X",
+    "prevout_hash": "cee9611c6805250aba15eb95dd656ef58a4f74f900f6b510fa846e057be574be",
+    "prevout_n": 0,
+    "value": 0.325
+  },
+  {
+    "address": "mg5vJjFdaTZVsCtk2bsVQWJXz8WWbqaKiC",
+    "prevout_hash": "54b36272f7558ab098c25f4a03973634a8d27f715c8a17ca09612d2319db0704",
+    "prevout_n": 0,
+    "value": 0.1625
+  }
+]
