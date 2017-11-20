@@ -44,9 +44,12 @@ console.log('-----------------------')
 const chunks = chunk(validUtxos, chunkSize)
 for (let i = 0; i < chunks.length; i++) {
   const chunk = chunks[i]
-  const { inputs, outputs } = selectAllCoins(chunk)
-  console.log(`RAWTX No ${i + 1}:`)
-  console.log(createTx(inputs, outputs))
+  const { inputs, outputs, fee } = selectAllCoins(chunk)
+  console.log(`RAWTX No ${i + 1} - Total Inputs: ${total(inputs)}, Total Outputs: ${total(outputs)}, Fee: ${fee}:`)
+  const rawtx = createTx(inputs, outputs)
+  if (rawtx) {
+    console.log(rawtx)
+  }
   console.log('-----------------------')
 }
 
@@ -67,21 +70,25 @@ function selectAllCoins (utxos) {
 }
 
 function createTx (inputs, outputs) {
-  const txb = new bitcoin.TransactionBuilder(network)
+  try {
+    const txb = new bitcoin.TransactionBuilder(network)
 
-  for (const input of inputs) {
-    txb.addInput(input.txId, input.vout)
+    for (const input of inputs) {
+      txb.addInput(input.txId, input.vout)
+    }
+
+    for (const output of outputs) {
+      txb.addOutput(output.address, output.value)
+    }
+
+    for (let i = 0; i < inputs.length; i++) {
+      txb.sign(i, keyPair)
+    }
+
+    return txb.build().toHex()
+  } catch (e) {
+    console.log('FAILURE! Check your settings in .env file', e.message)
   }
-
-  for (const output of outputs) {
-    txb.addOutput(output.address, output.value)
-  }
-
-  for (let i = 0; i < inputs.length; i++) {
-    txb.sign(i, keyPair)
-  }
-
-  return txb.build().toHex()
 }
 
 //
