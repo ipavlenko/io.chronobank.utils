@@ -7,21 +7,22 @@ const { chunk } = require('lodash')
 const coinselect = require('coinselect/split')
 const bip39 = require('bip39')
 const utxos = requireRoot(process.env.UTXO_PATH)
+const electrumPrivateKeys = requireRoot(process.env.ELECTRUM_KEYS)
 
 const DECIMALS = 100000000
 
 const address = process.env.TARGET_ADDRESS
 const feeRate = parseInt(process.env.FEE_RATE)
 const network = bitcoin.networks[process.env.NETWORK]
-const rootSeed = process.env.PRIVATE_KEY
+// const rootSeed = process.env.PRIVATE_KEY
 const mnemonic = process.env.MNEMONIC
 const chunkSize = process.env.CHUNK_SIZE
 
 console.log(bip39.mnemonicToSeed(mnemonic))
 
-const keyPair = mnemonic
-  ? bitcoin.HDNode.fromSeedBuffer(bip39.mnemonicToSeed(mnemonic), network)
-  : bitcoin.HDNode.fromSeedHex(rootSeed, network)
+// const keyPair = mnemonic
+//   ? bitcoin.HDNode.fromSeedBuffer(bip39.mnemonicToSeed(mnemonic), network)
+//   : bitcoin.HDNode.fromSeedHex(rootSeed, network)
 
 const targets = [
   {
@@ -52,7 +53,7 @@ for (let i = 0; i < chunks.length; i++) {
   const chunk = chunks[i]
   const { inputs, outputs, fee } = selectAllCoins(chunk)
   console.log(`RAWTX No ${i + 1} - Total Inputs: ${total(inputs)}, Total Outputs: ${total(outputs)}, Fee: ${fee}:`)
-  const rawtx = createTx(inputs, outputs)
+  const rawtx = createTx(inputs, outputs, chunk)
   if (rawtx) {
     console.log(rawtx)
   }
@@ -74,7 +75,7 @@ function selectAllCoins (utxos) {
   return { inputs, outputs, fee }
 }
 
-function createTx (inputs, outputs) {
+function createTx (inputs, outputs, utxos) {
   try {
     const txb = new bitcoin.TransactionBuilder(network)
 
@@ -87,6 +88,8 @@ function createTx (inputs, outputs) {
     }
 
     for (let i = 0; i < inputs.length; i++) {
+      const address = utxos[i].address
+      const keyPair = bitcoin.ECPair.fromWIF(electrumPrivateKeys[address], network)
       txb.sign(i, keyPair)
     }
 
