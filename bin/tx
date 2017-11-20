@@ -21,16 +21,18 @@ const targets = [
   }
 ]
 
+const deduplicatedUtxos = clearDoubles(utxos)
+
 const validUtxos = []
 const invalidUtxos = []
 
 // Check utxos one by one
-for (let i = 0; i < utxos.length; i++) {
-  const { inputs, outputs } = selectAllCoins([utxos[i]])
+for (let i = 0; i < deduplicatedUtxos.length; i++) {
+  const { inputs, outputs } = selectAllCoins([deduplicatedUtxos[i]])
   if (!inputs || !outputs) {
-    invalidUtxos.push(utxos[i])
+    invalidUtxos.push(deduplicatedUtxos[i])
   } else {
-    validUtxos.push(utxos[i])
+    validUtxos.push(deduplicatedUtxos[i])
   }
 }
 
@@ -64,6 +66,19 @@ function selectAllCoins (utxos) {
     value: parseInt(output.value * DECIMALS)
   })), targets, feeRate)
   return { inputs, outputs, fee }
+}
+
+function clearDoubles (utxos) {
+  const array = []
+  const map = {}
+  for (let utxo of utxos) {
+    const key = `${utxo.prevout_hash}:${utxo.prevout_n}`
+    if (!(key in map)) {
+      map[key] = 1
+      array.push(utxo)
+    }
+  }
+  return array
 }
 
 function createTx (inputs, outputs, utxos) {
