@@ -5,7 +5,6 @@ require('../require')
 const bitcoin = require('bitcoinjs-lib')
 const { chunk } = require('lodash')
 const coinselect = require('coinselect/split')
-const bip39 = require('bip39')
 const utxos = requireRoot(process.env.UTXO_PATH)
 const electrumPrivateKeys = requireRoot(process.env.ELECTRUM_KEYS)
 
@@ -14,15 +13,7 @@ const DECIMALS = 100000000
 const address = process.env.TARGET_ADDRESS
 const feeRate = parseInt(process.env.FEE_RATE)
 const network = bitcoin.networks[process.env.NETWORK]
-// const rootSeed = process.env.PRIVATE_KEY
-const mnemonic = process.env.MNEMONIC
 const chunkSize = process.env.CHUNK_SIZE
-
-console.log(bip39.mnemonicToSeed(mnemonic))
-
-// const keyPair = mnemonic
-//   ? bitcoin.HDNode.fromSeedBuffer(bip39.mnemonicToSeed(mnemonic), network)
-//   : bitcoin.HDNode.fromSeedHex(rootSeed, network)
 
 const targets = [
   {
