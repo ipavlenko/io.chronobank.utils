@@ -5,6 +5,7 @@ require('../require')
 const bitcoin = require('bitcoinjs-lib')
 const { chunk } = require('lodash')
 const coinselect = require('coinselect/split')
+const bip39 = require('bip39')
 const utxos = requireRoot(process.env.UTXO_PATH)
 
 const DECIMALS = 100000000
@@ -13,9 +14,14 @@ const address = process.env.TARGET_ADDRESS
 const feeRate = parseInt(process.env.FEE_RATE)
 const network = bitcoin.networks[process.env.NETWORK]
 const rootSeed = process.env.PRIVATE_KEY
+const mnemonic = process.env.MNEMONIC
 const chunkSize = process.env.CHUNK_SIZE
 
-const keyPair = bitcoin.HDNode.fromSeedHex(rootSeed, network)
+console.log(bip39.mnemonicToSeed(mnemonic))
+
+const keyPair = mnemonic
+  ? bitcoin.HDNode.fromSeedBuffer(bip39.mnemonicToSeed(mnemonic), network)
+  : bitcoin.HDNode.fromSeedHex(rootSeed, network)
 
 const targets = [
   {
@@ -60,7 +66,6 @@ function total (array) {
 }
 
 function selectAllCoins (utxos) {
-  // console.log(utxos)
   const { inputs, outputs, fee } = coinselect(utxos.map((output) => ({
     txId: output.prevout_hash,
     vout: output.prevout_n,
@@ -90,31 +95,3 @@ function createTx (inputs, outputs) {
     console.log('FAILURE! Check your settings in .env file', e.message)
   }
 }
-
-//
-// if (!inputs || !outputs) throw new Error('Bad transaction data')
-//
-// // Commented code exists in the example but not really
-// // required for the unknown reason. Check it.
-//
-// // const pk = this._wallet.keyPair.getPublicKeyBuffer()
-// // const spk = bitcoin.script.pubKey.output.encode(pk)
-//
-// const txb = new bitcoin.TransactionBuilder(this._network)
-// for (const input of inputs) {
-//   txb.addInput(input.txId, input.vout)
-//   // txb.addInput(input.txId, input.vout, bitcoin.Transaction.DEFAULT_SEQUENCE, spk)
-// }
-// for (const output of outputs) {
-//   if (!output.address) {
-//     output.address = this.getAddress()
-//   }
-//   txb.addOutput(output.address, output.value)
-// }
-//
-// this._signInputs(txb, inputs)
-//
-// return {
-//   tx: txb.build(),
-//   fee,
-// }
