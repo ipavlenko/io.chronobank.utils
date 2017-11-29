@@ -5,23 +5,15 @@ require('../require')
 const bitcoin = require('bitcoinjs-lib')
 const { chunk } = require('lodash')
 const coinselect = require('coinselect/split')
-const bip39 = require('bip39')
 const utxos = requireRoot(process.env.UTXO_PATH)
+const electrumPrivateKeys = requireRoot(process.env.ELECTRUM_KEYS)
 
 const DECIMALS = 100000000
 
 const address = process.env.TARGET_ADDRESS
 const feeRate = parseInt(process.env.FEE_RATE)
 const network = bitcoin.networks[process.env.NETWORK]
-const rootSeed = process.env.PRIVATE_KEY
-const mnemonic = process.env.MNEMONIC
 const chunkSize = process.env.CHUNK_SIZE
-
-console.log(bip39.mnemonicToSeed(mnemonic))
-
-const keyPair = mnemonic
-  ? bitcoin.HDNode.fromSeedBuffer(bip39.mnemonicToSeed(mnemonic), network)
-  : bitcoin.HDNode.fromSeedHex(rootSeed, network)
 
 const targets = [
   {
@@ -29,16 +21,18 @@ const targets = [
   }
 ]
 
+const deduplicatedUtxos = clearDoubles(utxos)
+
 const validUtxos = []
 const invalidUtxos = []
 
 // Check utxos one by one
-for (let i = 0; i < utxos.length; i++) {
-  const { inputs, outputs } = selectAllCoins([utxos[i]])
+for (let i = 0; i < deduplicatedUtxos.length; i++) {
+  const { inputs, outputs } = selectAllCoins([deduplicatedUtxos[i]])
   if (!inputs || !outputs) {
-    invalidUtxos.push(utxos[i])
+    invalidUtxos.push(deduplicatedUtxos[i])
   } else {
-    validUtxos.push(utxos[i])
+    validUtxos.push(deduplicatedUtxos[i])
   }
 }
 
@@ -52,7 +46,7 @@ for (let i = 0; i < chunks.length; i++) {
   const chunk = chunks[i]
   const { inputs, outputs, fee } = selectAllCoins(chunk)
   console.log(`RAWTX No ${i + 1} - Total Inputs: ${total(inputs)}, Total Outputs: ${total(outputs)}, Fee: ${fee}:`)
-  const rawtx = createTx(inputs, outputs)
+  const rawtx = createTx(inputs, outputs, chunk)
   if (rawtx) {
     console.log(rawtx)
   }
@@ -74,7 +68,20 @@ function selectAllCoins (utxos) {
   return { inputs, outputs, fee }
 }
 
-function createTx (inputs, outputs) {
+function clearDoubles (utxos) {
+  const array = []
+  const map = {}
+  for (let utxo of utxos) {
+    const key = `${utxo.prevout_hash}:${utxo.prevout_n}`
+    if (!(key in map)) {
+      map[key] = 1
+      array.push(utxo)
+    }
+  }
+  return array
+}
+
+function createTx (inputs, outputs, utxos) {
   try {
     const txb = new bitcoin.TransactionBuilder(network)
 
@@ -87,6 +94,8 @@ function createTx (inputs, outputs) {
     }
 
     for (let i = 0; i < inputs.length; i++) {
+      const address = utxos[i].address
+      const keyPair = bitcoin.ECPair.fromWIF(electrumPrivateKeys[address], network)
       txb.sign(i, keyPair)
     }
 

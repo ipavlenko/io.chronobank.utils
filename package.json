@@ -6,6 +6,7 @@
   "scripts": {
     "tx": "node bin/tx",
     "addrs": "node bin/addrs",
+    "doubles": "node bin/doubles",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

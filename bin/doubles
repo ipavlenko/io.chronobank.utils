@@ -1,0 +1,12 @@
+#!/usr/bin/env node
+require('dotenv').config()
+require('../require')
+
+const utxos = requireRoot(process.env.UTXO_PATH)
+
+console.log(utxos.reduce((t, u) => ({
+  ...t,
+  [u.prevout_hash]: {
+    count: (t[u.prevout_hash] ? t[u.prevout_hash].count : 0) + 1
+  }
+}), {}))

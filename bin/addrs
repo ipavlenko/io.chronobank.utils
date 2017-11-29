@@ -8,12 +8,14 @@ const network = bitcoin.networks[process.env.NETWORK]
 
 const hdNode = bitcoin.HDNode.fromSeedHex(process.env.PRIVATE_KEY, network)
 
-const keyPair1 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/0`)
-const keyPair2 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/1`)
-const keyPair3 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/2`)
-const keyPair4 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/3`)
+const derived1 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/0`)
+const derived2 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/1`)
+const derived3 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/2`)
+const derived4 = hdNode.derivePath(`m/44'/${network === bitcoin.networks.testnet ? 1 : 0}'/0'/0/3`)
 
-console.log(keyPair1.getAddress())
-console.log(keyPair2.getAddress())
-console.log(keyPair3.getAddress())
-console.log(keyPair4.getAddress())
+console.log(JSON.stringify({
+  [derived1.getAddress()]: derived1.keyPair.toWIF(),
+  [derived2.getAddress()]: derived2.keyPair.toWIF(),
+  [derived3.getAddress()]: derived3.keyPair.toWIF(),
+  [derived4.getAddress()]: derived4.keyPair.toWIF()
+}, true, 2))
